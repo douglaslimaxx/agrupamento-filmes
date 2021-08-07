@@ -30,12 +30,12 @@ paleta = c("#404E4D",
 ```{r}
 ## ANTES DE USAR
 # Para criar data/movies.csv
-import_data("scarlett_johansson") # ou com o ator/atriz que você escolher
+import_data("sarah_paulson") # ou com o ator/atriz que você escolher
 ```
 
 
 ```{r read}
-filmes = read_imported_data("scarlett_johansson")
+filmes = read_imported_data("sarah_paulson")
 ```
 
 ## Descrição
@@ -66,12 +66,34 @@ filmes %>%
 ## Explorar interativamente
 
 ```{r}
-p = filmes %>% 
-    ggplot(aes(x = ano, y = bilheteria, label = filme)) + 
+filmes %>% 
+    ggplot(aes(x = nota_audiencia, y = bilheteria, label = filme)) + 
     geom_point(size = 4, color = paleta[1]) + 
     scale_y_log10()
 
-ggplotly(p)
 ```
 
 ## Agrupamento 
+
+```{r}
+a = filmes %>% 
+    select(nota_audiencia, avaliacao, bilheteria)
+```
+
+```{r}
+m = kmeans(a, 5)
+```
+
+```{r}
+result = a %>% 
+    mutate(cluster = m$cluster)
+```
+
+```{r}
+result %>% 
+    ggplot(aes(x = nota_audiencia, y = bilheteria, color = cluster)) + 
+    geom_point(size = 4) + 
+    scale_y_log10()
+
+```
+

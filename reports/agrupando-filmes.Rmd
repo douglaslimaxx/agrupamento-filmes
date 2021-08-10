@@ -1,9 +1,13 @@
 ---
-title: "Tipos de filme de FULANO(A)"
+title: "Tipos de filme de Emma Watson"
 output:
-    html_document:
+  html_document:
     df_print: paged
-theme: sandstone
+    toc: yes
+    toc_float: yes
+  html_notebook:
+    toc: yes
+    toc_float: yes
 ---
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
@@ -27,73 +31,98 @@ paleta = c("#404E4D",
            "#F4743B")
 ```
 
-```{r}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 ## ANTES DE USAR
 # Para criar data/movies.csv
-import_data("sarah_paulson") # ou com o ator/atriz que você escolher
+import_data("emma_watson") # ou com o ator/atriz que você escolher
 ```
 
 
-```{r read}
-filmes = read_imported_data("sarah_paulson")
+```{r read, echo=FALSE, message=FALSE, warning=FALSE}
+filmes = read_imported_data("emma_watson")
 ```
 
-## Descrição
+## Exploração dos dados
 
-```{r}
+Utilizando os dados de filmes que a atriz Emma Watson participou e que tenham algum valor de bilheteria construímos a análise a seguir.
+
+
+```{r echo=FALSE}
 filmes %>% 
-    ggplot(aes(x = ano, y = bilheteria)) + 
-    geom_point(size = 4, color = paleta[1]) + 
-    scale_y_log10()
+    ggplot(aes(x = ano, y = bilheteria, color = nota_audiencia)) +
+    geom_point(size = 4) +
+    labs(
+        x = "Ano",
+        y = "Bilheteria em milhões",
+        color = "Nota da audiência"
+    )
 ```
 
-
-
-```{r}
-filmes %>% 
-    ggplot(aes(x = bilheteria)) + 
-    geom_histogram(binwidth = 15, fill = paleta[2], color = "black") + 
-    geom_rug(size = .5) 
-```
-
-```{r}
-filmes %>% 
-    ggplot(aes(x = avaliacao)) + 
-    geom_histogram(binwidth = 10, boundary = 0, fill = paleta[3], color = "black") + 
-    geom_rug(size = .5) 
-```
-
-## Explorar interativamente
-
-```{r}
-filmes %>% 
-    ggplot(aes(x = nota_audiencia, y = bilheteria, label = filme)) + 
-    geom_point(size = 4, color = paleta[1]) + 
-    scale_y_log10()
-
-```
+Com os filmes que Emma Watson participou podemos ver que os primeiros foram bons e constantes em relação à bilheteria, esses filmes compõem a saga Harry Poter que foi lançada entre 2001 e 2011. Os demais filmes tiveram menor bilheteria, com excessão de um filme lançado em 2017, A Bela e a Fera, um remake do clássico da Disney, que teve a maior bilheteria da carreira da atriz.
 
 ## Agrupamento 
 
-```{r}
+
+Relacionando os filmes que Emma Watson participou em relação a bilheteria e a crítica, podemos visualizar 4 agrupamentos: Os filmes com crítica variada, mas baixa bilheteria; filmes com uma boa crítica e bilheteria média; os filmes da saga harry potter; e os filmes de maior bilheteria da carreira da atriz.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 a = filmes %>% 
-    select(nota_audiencia, avaliacao, bilheteria)
-```
+    mutate(bilheteria_d = bilheteria - mean(bilheteria),
+           avaliacao_d = avaliacao - mean(avaliacao))
 
-```{r}
-m = kmeans(a, 5)
-```
+m = a  %>% 
+    select(avaliacao_d, bilheteria_d) %>% 
+    kmeans(centers = 4, nstart = 20)
 
-```{r}
 result = a %>% 
-    mutate(cluster = m$cluster)
+    select(filme, bilheteria, avaliacao, ano) %>% 
+    mutate(cluster = as.factor(m$cluster))
 ```
 
-```{r}
+```{r echo=FALSE}
 result %>% 
-    ggplot(aes(x = nota_audiencia, y = bilheteria, color = cluster)) + 
-    geom_point(size = 4) + 
-    scale_y_log10()
-
+    ggplot(aes(x = avaliacao, y = bilheteria, color = cluster)) + 
+    geom_point(size = 2) +
+    labs(
+        x = "Avaliação da crítica",
+        y = "Bilheteria em milhões",
+        color = "Grupo"
+    )
 ```
 
+### Filmes com crítica variada, mas baixa bilheteria
+
+```{r echo=FALSE}
+result %>% 
+    filter(cluster == 4) %>% 
+    arrange(bilheteria)
+```
+
+Esse grupo é composto pelos filmes de menor bilheteria da carreira de Emma Watson, mas com crítica variada. O filme The Perks of Being a Wallflower, um drama lançado em 2012, tem um avaliação alta. Já o filme The Circle, um thriller lançado em 2017, tem a menor avaliação entre todos os filmes.
+
+### Filmes com uma boa crítica e bilheteria média
+```{r echo=FALSE}
+result %>% 
+    filter(cluster == 2) %>% 
+    arrange(bilheteria)
+```
+
+OS filmes que tiverem uma bilheteria mediana e uma boa avaliação compõem esse grupo. Filmes como Noah, que conta uma versão da mito de Noé.
+
+### Filmes da saga Harry Potter
+```{r echo=FALSE}
+result %>% 
+    filter(cluster == 3) %>% 
+    arrange(bilheteria)
+```
+
+Os filmes da saga Harry Potter compõem esse agrupamento, menos o último filme. Todos os filmes tem bilheteria e avaliação da crítica constantes e altas, fazendo com que formem um grupo bem coeso.
+
+### Filmes de maior bilheteria da carreira da atriz
+```{r echo=FALSE}
+result %>% 
+    filter(cluster == 1) %>% 
+    arrange(bilheteria)
+```
+
+Já o último grupo é formado pelos filmes de maior bilheteria da carreira de Emma Watson. O último filme da saga Harry Potter não está no mesmo grupo dos demais pois a sua bilheteria e crítica foram bem mais altas do que as dos demais filmes. E outro filme que compõe esse grupo é o filme de maior bilheteria, A Bela e a Fera.

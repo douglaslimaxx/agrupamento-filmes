@@ -58,23 +58,18 @@ filmes %>%
     )
 ```
 
-Com os filmes que Emma Watson participou podemos ver que os primeiros foram bons e constantes em relação à bilheteria, esses filmes compõem a saga Harry Poter que foi lançada entre 2001 e 2011. Os demais filmes tiveram menor bilheteria, com excessão de um filme lançado em 2017, A Bela e a Fera, um remake do clássico da Disney, que teve a maior bilheteria da carreira da atriz.
+Em relação aos filmes que Emma Watson participou podemos ver que os primeiros tiveram alta bilheteria, sendo os filmes que compõem a saga Harry Poter, lançada entre 2001 e 2011. Os demais filmes tiveram menor bilheteria, com excessão de um filme lançado em 2017, A Bela e a Fera, um remake do clássico da Disney, que teve a maior bilheteria da carreira da atriz.
 
 ## Agrupamento 
 
-
-Relacionando os filmes que Emma Watson participou em relação a bilheteria e a crítica, podemos visualizar 4 agrupamentos: Os filmes com crítica variada, mas baixa bilheteria; filmes com uma boa crítica e bilheteria média; os filmes da saga harry potter; e os filmes de maior bilheteria da carreira da atriz.
+Relacionando os filmes que Emma Watson participou, especificamente utilizando a bilheteria e a crítica desses filmes, podemos visualizar 4 agrupamentos: os filmes com crítica variada, mas baixa bilheteria; filmes com uma boa crítica e bilheteria média; os filmes da saga harry potter; e os filmes de maior bilheteria da carreira da atriz.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-a = filmes %>% 
-    mutate(bilheteria_d = bilheteria - mean(bilheteria),
-           avaliacao_d = avaliacao - mean(avaliacao))
-
-m = a  %>% 
-    select(avaliacao_d, bilheteria_d) %>% 
+m = filmes  %>% 
+    select(avaliacao, bilheteria) %>% 
     kmeans(centers = 4, nstart = 20)
 
-result = a %>% 
+result = filmes %>% 
     select(filme, bilheteria, avaliacao, ano) %>% 
     mutate(cluster = as.factor(m$cluster))
 ```
@@ -94,7 +89,7 @@ result %>%
 
 ```{r echo=FALSE}
 result %>% 
-    filter(cluster == 4) %>% 
+    filter(bilheteria < 21) %>% 
     arrange(bilheteria)
 ```
 
@@ -103,26 +98,28 @@ Esse grupo é composto pelos filmes de menor bilheteria da carreira de Emma Wats
 ### Filmes com uma boa crítica e bilheteria média
 ```{r echo=FALSE}
 result %>% 
-    filter(cluster == 2) %>% 
+    filter(bilheteria > 21, bilheteria < 150) %>% 
     arrange(bilheteria)
 ```
 
-OS filmes que tiverem uma bilheteria mediana e uma boa avaliação compõem esse grupo. Filmes como Noah, que conta uma versão da mito de Noé.
+Os filmes que tiverem uma bilheteria mediana e uma boa avaliação compõem esse grupo. Filmes como Noah, que conta uma versão do mito de Noé.
 
 ### Filmes da saga Harry Potter
+
 ```{r echo=FALSE}
 result %>% 
-    filter(cluster == 3) %>% 
+    filter(bilheteria > 150, bilheteria < 350) %>% 
     arrange(bilheteria)
 ```
 
-Os filmes da saga Harry Potter compõem esse agrupamento, menos o último filme. Todos os filmes tem bilheteria e avaliação da crítica constantes e altas, fazendo com que formem um grupo bem coeso.
+Os filmes da saga Harry Potter compõem esse agrupamento, menos o último. Todos os filmes tem bilheteria e avaliação da crítica constantes e altas, fazendo com que formem um grupo bem coeso.
 
 ### Filmes de maior bilheteria da carreira da atriz
+
 ```{r echo=FALSE}
 result %>% 
-    filter(cluster == 1) %>% 
+    filter(bilheteria > 350) %>% 
     arrange(bilheteria)
 ```
 
-Já o último grupo é formado pelos filmes de maior bilheteria da carreira de Emma Watson. O último filme da saga Harry Potter não está no mesmo grupo dos demais pois a sua bilheteria e crítica foram bem mais altas do que as dos demais filmes. E outro filme que compõe esse grupo é o filme de maior bilheteria, A Bela e a Fera.
+Já o último grupo é formado pelos filmes de maior bilheteria da carreira de Emma Watson. O último filme da saga Harry Potter não está no mesmo grupo dos demais pois a sua bilheteria e crítica foram bem mais altas do que as dos demais filmes. E outro filme que compõe esse grupo é o de maior bilheteria da carreira da atriz, A Bela e a Fera.
